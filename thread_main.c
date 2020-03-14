@@ -73,7 +73,7 @@ void *thread_main(void *thread_data) {
 			}
 			else {
 				// cur_event now describes event on socket (if it is read/write opportunity and gives us pointer to epoll_fd_storage associated with socket)
-				// so, we should process that event
+				// so, we should process that events
 			}
 		}
 	}
