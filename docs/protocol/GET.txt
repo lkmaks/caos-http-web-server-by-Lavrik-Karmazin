@@ -1,0 +1,48 @@
+I. Request Headers:
+1) Accept
+2) Accept-Charset
+3) Host
+4) Connection
+5) If-Modified-Since
+
+II. Обработка headers + $uri.
+1. $host равен одному из действующих  на сервере доменов (в частности, $host != NULL).
+В противном случае: 404 (Not Found)
+
+2. $path = $host + $uri
+$path должен быть корректным путем в директории файлов сервера, ведущим к файлу, к которому применим
+GET-запрос, согласно конфигурации сервера.
+В случае отсутствия файла по такому пути: 404 (Not Found)
+В случае наличия файла, но неприменимости GET-запроса к нему: 405 (Method Not Allowed)
+
+3. $accept != NULL.
+Упрощенно интерпретируется как qvalue-list (см. add_info.txt);
+Среди списка значений должно быть то, которое содержит MIME type mime_type($path) (который предполагается для данного файла в соответствии в конфигурацией сервера).
+В противном случае: 501 (Not Implemented).
+
+4. Либо $accept_charset == NULL;
+Либо он упрощенно интерпретируется как qvalue-list (см. add_info.txt);
+Должен содержить кодировку encoding($path), в которой находится запрашиваемый файл (по пути $path).
+Кодировка определяется исходя из конфигурации, либо автоматически.
+При отсутствии нужной кодировки: 501 (Not Implemented)
+
+5. $connection может быть равно NULL, keep-alive или close.
+В противном случае: 400 (Bad Request).
+
+6. Либо $if_modified_since == NULL;
+Либо содержит дату в формате:
+	"If-Modified-Since: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT"
+В противном случае: 400 (Bad Request).
+
+III. Дочитвание $body
+$body не дочитыватся: считается, что тут запрос клиента закончился.
+
+IV. Формирование ответа.
+1. Если $if_modified_since < $last_modified:
+304 (Not Modified)
+Connection: $connection либо close (второе возможно если сервер не хочет оставлять соединение, но $connection == keep-alive)
+2. Иначе:
+200 (OK)
+Content-Type: mime_type($path); charset=encoding($path)
+Content-Length: file_size($path)
+Connection: $connection либо close (второе возможно если сервер не хочет оставлять соединение, но $connection == keep-alive)
