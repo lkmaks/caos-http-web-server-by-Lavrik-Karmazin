@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="caos-http-web-server"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/max/acos/caos-http-web-server/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/max/acos/caos-http-web-server/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="caos-http-web-server">
+				<Option output="/home/max/acos/caos-http-web-server/cmake-build-debug/caos-http-web-server" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/max/acos/caos-http-web-server/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 caos-http-web-server"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="caos-http-web-server/fast">
+				<Option output="/home/max/acos/caos-http-web-server/cmake-build-debug/caos-http-web-server" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/max/acos/caos-http-web-server/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 caos-http-web-server/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/max/acos/caos-http-web-server/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/max/acos/caos-http-web-server/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/max/acos/caos-http-web-server/Config.h">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/Epoll.cpp">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/Epoll.h">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/EpollContext.cpp">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/EpollContext.h">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/HTTPServer.cpp">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/HTTPServer.h">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/ThreadPool.cpp">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/ThreadPool.h">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/Utils.h">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/main.cpp">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/thread_main.cpp">
+			<Option target="caos-http-web-server"/>
+		</Unit>
+		<Unit filename="/home/max/acos/caos-http-web-server/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

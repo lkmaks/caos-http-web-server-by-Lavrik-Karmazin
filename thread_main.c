@@ -10,7 +10,7 @@
 #include <errno.h>
 
 
-struct epoll_fd_storage {
+typedef struct epoll_fd_storage {
 	int is_input_pipe;
 	union {
 		struct input_pipe {
@@ -18,7 +18,7 @@ struct epoll_fd_storage {
 			int bytes_read;
 		}
 	}
-}
+} epoll_fd_storage;
 
 
 void *thread_main(void *thread_data) {

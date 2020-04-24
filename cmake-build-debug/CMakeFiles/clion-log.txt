@@ -1,0 +1,4 @@
+/home/max/soft/clion-2019.1.2/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/max/acos/caos-http-web-server
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/max/acos/caos-http-web-server/cmake-build-debug
