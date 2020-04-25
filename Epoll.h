@@ -1,3 +1,7 @@
+#ifndef CAOS_HTTP_WEB_SERVER_EPOLL_H
+#define CAOS_HTTP_WEB_SERVER_EPOLL_H
+
+
 #include <vector>
 #include "EpollContext.h"
 #include <inttypes.h>
@@ -6,6 +10,8 @@
 struct EpollEvent {
     uint32_t events_mask;
     EpollContext *epoll_context;
+
+    EpollEvent() = default;
 
     EpollEvent(uint32_t events, epoll_data_t epoll_data) : events_mask(events) {
       epoll_context = (EpollContext*)(epoll_data.ptr);
@@ -29,3 +35,5 @@ public:
 private:
     int epoll_fd;
 };
+
+#endif

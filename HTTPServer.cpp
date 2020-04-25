@@ -8,16 +8,20 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <string.h>
 
 typedef std::string::size_type size_type;
 
+
+Config &HTTPServer::GetConf() {
+  return config_;
+}
 
 HTTPServer::HTTPServer(const std::string &ipv4_addr, const std::string &conf_dir, const std::string &data_dir) :
                        ipv4_addr_(ipv4_addr) {
   if (!load_config(conf_dir, data_dir)) {
     throw std::logic_error("Bad vhosts.txt file");
   }
-  thread_pool_ = ThreadPool(config_.threads_num);
 
   std::vector<uint16_t> server_ports;
   for (auto &elem : config_.vhosts) {
@@ -26,14 +30,23 @@ HTTPServer::HTTPServer(const std::string &ipv4_addr, const std::string &conf_dir
   auto last = std::unique(server_ports.begin(), server_ports.end());
   server_ports.erase(last, server_ports.end());
 
+  // argument does not affect anything for linux >= 2.6.8
+  epoll_main_ = Epoll(config_.max_main_epoll_queue);
   int n_ports = server_ports.size();
   server_sockets_.resize(n_ports);
+  server_socket_epoll_contexts_.resize(n_ports);
   for (int i = 0; i < n_ports; ++i) {
     server_sockets_[i] = {socket(AF_INET, SOCK_STREAM, 0), server_ports[i]};
+    modify_nonblock(server_sockets_[i].first);
+    #ifdef LOCAL
+        int opt = 1;
+        setsockopt(server_sockets_[i].first, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+    #endif
     epoll_main_.AddFileDescriptor(
             server_sockets_[i].first,
             EPOLLIN,
             &server_socket_epoll_contexts_[i]);
+    server_socket_epoll_contexts_[i].fd = server_sockets_[i].first;
   }
 }
 
@@ -58,17 +71,20 @@ bool HTTPServer::load_config(const std::string &conf_dir, const std::string &dat
     if (!is_natural_number(port_str) || !is_ok_hostname(hostname)) {
       return false;
     }
-    config_.vhosts.emplace_back(hostname, strtol(port_str.c_str(), nullptr, 10));
+    config_.vhosts.emplace_back(hostname, (uint16_t)strtol(port_str.c_str(), nullptr, 10));
   }
 
   // deleting duplicates
   std::sort(config_.vhosts.begin(), config_.vhosts.end());
   auto last = std::unique(config_.vhosts.begin(), config_.vhosts.end());
   config_.vhosts.erase(last, config_.vhosts.end());
+
+  return true;
 }
 
 void HTTPServer::run() {
   sockaddr_in address;
+  memset(&address, 0, sizeof(address));
   address.sin_family = AF_INET;
   inet_aton(ipv4_addr_.c_str(), &address.sin_addr);
   for (int i = 0; i < server_sockets_.size(); ++i) {
@@ -77,10 +93,12 @@ void HTTPServer::run() {
     listen(server_sockets_[i].first, config_.max_conn_queue);
   }
 
+  thread_pool_ = ThreadPool(config_.threads_num, this);
+
   while (true) {
     std::vector<EpollEvent> events = epoll_main_.Wait(config_.max_epoll_events_in_iteration, -1);
     for (auto event : events) {
-      int conn_socket = accept(((ServerSocketEpollContext*)event.epoll_context)->fd, nullptr, nullptr);
+      int conn_socket = accept(((FdEpollContext*)event.epoll_context)->fd, nullptr, nullptr);
       thread_pool_.SendNewConnToAnyThread(Connection(conn_socket));
     }
   }

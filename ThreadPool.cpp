@@ -1,11 +1,18 @@
 #include "ThreadPool.h"
 #include "Utils.h"
+#include "ThreadMain.h"
+#include <sys/socket.h>
 
-ThreadPool::ThreadPool(int cnt_threads) {
+class HTTPServer;
+
+ThreadPool::ThreadPool(int cnt_threads, HTTPServer* parent) {
   threads_.resize(cnt_threads);
   pthread_attr_t thread_attr;
   pthread_attr_init(&thread_attr);
   for (int i = 0; i < cnt_threads; ++i) {
+    pipe(threads_[i].channel);
+
+    threads_[i].server = parent;
     pthread_create(&threads_[i].thread, &thread_attr, thread_main, &threads_[i]);
   }
   pthread_attr_destroy(&thread_attr);
@@ -13,7 +20,7 @@ ThreadPool::ThreadPool(int cnt_threads) {
 }
 
 void ThreadPool::SendNewConn(int thread_id, const Connection &new_conn){
-  write_all(threads_[thread_id].channel[0], (void*)&new_conn, sizeof(new_conn));
+  write_all(threads_[thread_id].channel[1], (void*)&new_conn, sizeof(new_conn));
 }
 
 void ThreadPool::SendNewConnToAnyThread(const Connection &new_conn) {
