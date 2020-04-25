@@ -1,5 +1,5 @@
-#ifndef CAOS_HTTP_WEB_SERVER_THREADMAIN_H
-#define CAOS_HTTP_WEB_SERVER_THREADMAIN_H
+#ifndef CAOS_HTTP_WEB_SERVER_THREADMAIN_HPP
+#define CAOS_HTTP_WEB_SERVER_THREADMAIN_HPP
 
 
 #include <queue>
@@ -7,18 +7,29 @@
 #include "ThreadPool.h"
 #include "ConnectionQueue.h"
 #include "Config.h"
-#include "HTTPServer.h"
+#include "HttpServer.h"
 
 
-class HTTPServer;
+class HttpServer;
 
 Config &GetConf(ThreadData *thread_data) {
   return thread_data->server->GetConf();
 }
 
 
+void HandleEvent(EpollEvent &event) {
+  auto *context = (ProxyEpollContext*)(event.epoll_context);
+  if (event.events_mask & EPOLLIN) {
+    context->HandleReadEvent();
+  }
+  if (event.events_mask & EPOLLOUT) {
+    context->HandleWriteEvent();
+  }
+}
+
+
 void *thread_main(void *ptr) {
-  ThreadData *thread_data = (ThreadData*)ptr;
+  auto *thread_data = (ThreadData*)ptr;
   int channel_fd = thread_data->channel[0];
   modify_nonblock(channel_fd);
 
@@ -27,18 +38,21 @@ void *thread_main(void *ptr) {
   FdEpollContext channel_context(channel_fd);
   thread_epoll.AddFileDescriptor(channel_fd, EPOLLIN, &channel_context);
 
-  ConnectionQueue conn_queue(thread_epoll, channel_fd); // adds new connections to epoll, stores ones that do not fit in queue
+  // adds new connections to epoll, stores ones that do not fit in queue
+  ConnectionQueue conn_queue(thread_epoll, channel_fd, GetConf(thread_data));
 
   while (true) {
     std::vector<EpollEvent> events = thread_epoll.Wait(GetConf(thread_data).max_epoll_events_in_iteration);
     for (auto e : events) {
-      if (e.epoll_context->context_type == "FdEpollContext" && ((FdEpollContext*)e.epoll_context)->fd == channel_fd) {
+      if (e.epoll_context->GetType() == FD && ((FdEpollContext*)e.epoll_context)->GetFd() == channel_fd) {
         conn_queue.AddNewConnections();
       }
       else {
         // NOT IMPLEMENTED YET
         printf("%d\n", (int)(e.events_mask & EPOLLIN));
         printf("%d\n", (int)(e.events_mask & EPOLLOUT));
+
+        HandleEvent(e);
       }
     }
   }

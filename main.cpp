@@ -1,6 +1,6 @@
 
 
-#include "HTTPServer.h"
+#include "HttpServer.h"
 
 int main(int argc, char **argv) {
   // argv:
@@ -8,6 +8,6 @@ int main(int argc, char **argv) {
   // 2: configuration directory
   // 3: data directory
 
-  HTTPServer server(argv[1], argv[2], argv[3]);
+  HttpServer server(argv[1], argv[2], argv[3]);
   server.run();
 }

@@ -1,4 +1,4 @@
-#include "HTTPServer.h"
+#include "HttpServer.h"
 #include <fstream>
 #include "Utils.h"
 #include <exception>
@@ -13,11 +13,11 @@
 typedef std::string::size_type size_type;
 
 
-Config &HTTPServer::GetConf() {
+Config &HttpServer::GetConf() {
   return config_;
 }
 
-HTTPServer::HTTPServer(const std::string &ipv4_addr, const std::string &conf_dir, const std::string &data_dir) :
+HttpServer::HttpServer(const std::string &ipv4_addr, const std::string &conf_dir, const std::string &data_dir) :
                        ipv4_addr_(ipv4_addr) {
   if (!load_config(conf_dir, data_dir)) {
     throw std::logic_error("Bad vhosts.txt file");
@@ -37,7 +37,6 @@ HTTPServer::HTTPServer(const std::string &ipv4_addr, const std::string &conf_dir
   server_socket_epoll_contexts_.resize(n_ports);
   for (int i = 0; i < n_ports; ++i) {
     server_sockets_[i] = {socket(AF_INET, SOCK_STREAM, 0), server_ports[i]};
-    modify_nonblock(server_sockets_[i].first);
     #ifdef LOCAL
         int opt = 1;
         setsockopt(server_sockets_[i].first, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
@@ -46,12 +45,12 @@ HTTPServer::HTTPServer(const std::string &ipv4_addr, const std::string &conf_dir
             server_sockets_[i].first,
             EPOLLIN,
             &server_socket_epoll_contexts_[i]);
-    server_socket_epoll_contexts_[i].fd = server_sockets_[i].first;
+    server_socket_epoll_contexts_[i].SetFd(server_sockets_[i].first);
   }
 }
 
 
-bool HTTPServer::load_config(const std::string &conf_dir, const std::string &data_dir) {
+bool HttpServer::load_config(const std::string &conf_dir, const std::string &data_dir) {
   config_.conf_dir = conf_dir;
   config_.data_dir = data_dir;
 
@@ -82,7 +81,7 @@ bool HTTPServer::load_config(const std::string &conf_dir, const std::string &dat
   return true;
 }
 
-void HTTPServer::run() {
+void HttpServer::run() {
   sockaddr_in address;
   memset(&address, 0, sizeof(address));
   address.sin_family = AF_INET;
@@ -98,7 +97,7 @@ void HTTPServer::run() {
   while (true) {
     std::vector<EpollEvent> events = epoll_main_.Wait(config_.max_epoll_events_in_iteration, -1);
     for (auto event : events) {
-      int conn_socket = accept(((FdEpollContext*)event.epoll_context)->fd, nullptr, nullptr);
+      int conn_socket = accept(((FdEpollContext*)event.epoll_context)->GetFd(), nullptr, nullptr);
       thread_pool_.SendNewConnToAnyThread(Connection(conn_socket));
     }
   }

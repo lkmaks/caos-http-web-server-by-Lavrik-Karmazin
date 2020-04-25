@@ -15,6 +15,8 @@ struct Config {
     int max_epoll_events_in_iteration = 100;
     std::string conf_dir;
     std::string data_dir;
+    int read_chunk_size = 256;
+    std::vector<std::string> http_methods = {"GET"};
 };
 
 #endif

@@ -1,11 +1,11 @@
 #include "ThreadPool.h"
 #include "Utils.h"
-#include "ThreadMain.h"
+#include "ThreadMain.hpp"
 #include <sys/socket.h>
 
-class HTTPServer;
+class HttpServer;
 
-ThreadPool::ThreadPool(int cnt_threads, HTTPServer* parent) {
+ThreadPool::ThreadPool(int cnt_threads, HttpServer* parent) {
   threads_.resize(cnt_threads);
   pthread_attr_t thread_attr;
   pthread_attr_init(&thread_attr);

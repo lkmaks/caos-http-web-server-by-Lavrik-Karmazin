@@ -8,9 +8,9 @@
 
 class ThreadPool;
 
-class HTTPServer {
+class HttpServer {
 public:
-    HTTPServer(const std::string &ipv4_addr, const std::string &conf_dir, const std::string &data_dir);
+    HttpServer(const std::string &ipv4_addr, const std::string &conf_dir, const std::string &data_dir);
 
     Config &GetConf();
 

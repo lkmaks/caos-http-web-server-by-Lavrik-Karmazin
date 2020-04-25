@@ -8,11 +8,11 @@
 
 class ConnectionsReader {
 public:
-    ConnectionsReader(int fd) : fd(fd), cur_context() {}
+    explicit ConnectionsReader(int fd) : fd_(fd), cur_context() {}
 
     std::vector<Connection> GetConnections() {
       std::vector<Connection> result;
-      while (ReadSomeConnection(cur_context, fd) == 0) {
+      while (ReadSomeConnection(cur_context, fd_) == 0) {
         result.push_back(cur_context.connection);
         cur_context.refresh();
       }
@@ -20,7 +20,7 @@ public:
     }
 
     int GetFd() {
-      return fd;
+      return fd_;
     }
 
 private:
@@ -34,7 +34,7 @@ private:
     };
 
     ConnectionReadContext cur_context;
-    int fd;
+    int fd_;
 
     int ReadSomeConnection(ConnectionReadContext &context, int fd) {
       // returns how many bytes left to read of the object
@@ -50,14 +50,19 @@ private:
 
 class ConnectionQueue {
 public:
-    ConnectionQueue(Epoll &thread_epoll, int channel_fd) :
-            thread_epoll_(thread_epoll), connection_reader(channel_fd) {}
+    ConnectionQueue(Epoll &thread_epoll, int channel_fd, Config &config) :
+            thread_epoll_(thread_epoll), connection_reader(channel_fd), config_(config) {}
+
+    int AddConnection(Connection &conn) {
+      modify_nonblock(conn.sock); // socket will be treated with EPOLLET semantics
+      auto *underlying_context = new InitialHttpEpollContext(conn.sock, config_);
+      auto *new_context = new ProxyEpollContext(underlying_context);
+      return thread_epoll_.AddFileDescriptor(conn.sock, EPOLLET | EPOLLIN | EPOLLOUT, new_context);
+    }
 
     void AddNewConnections() {
       while (!conn_queue.empty()) {
-        auto conn = conn_queue.front();
-        InitialHttpEpollContext *new_context = new InitialHttpEpollContext();
-        int status = thread_epoll_.AddFileDescriptor(conn.sock, EPOLLET | EPOLLIN | EPOLLOUT, new_context);
+        int status = AddConnection(conn_queue.front());
         if (status == -1) {
           break;
         }
@@ -70,8 +75,7 @@ public:
         std::vector<Connection> new_conns = connection_reader.GetConnections();
         int i = 0;
         for (; i < new_conns.size(); ++i) {
-          InitialHttpEpollContext *new_context = new InitialHttpEpollContext();
-          int status = thread_epoll_.AddFileDescriptor(new_conns[i].sock, EPOLLET | EPOLLIN | EPOLLOUT, new_context);
+          int status = AddConnection(new_conns[i]);
           if (status == -1) {
             break;
           }
@@ -86,6 +90,7 @@ private:
     Epoll &thread_epoll_;
     ConnectionsReader connection_reader;
     std::queue<Connection> conn_queue; // connections that do not fit in EPOLL for some reason
+    Config &config_;
 };
 
 #endif //CAOS_HTTP_WEB_SERVER_CONNECTIONQUEUE_H

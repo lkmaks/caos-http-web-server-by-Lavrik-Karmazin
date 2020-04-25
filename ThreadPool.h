@@ -5,7 +5,7 @@
 #include <vector>
 
 
-class HTTPServer;
+class HttpServer;
 
 struct ThreadData {
     pthread_t thread;
@@ -14,7 +14,7 @@ struct ThreadData {
     // channel[1] is main thread's socket, channel[0] is worker's,
     // since main thread send messages to workers
     int channel[2];
-    HTTPServer* server;
+    HttpServer* server;
 };
 
 struct Connection {
@@ -29,7 +29,7 @@ struct Connection {
 class ThreadPool {
 public:
     ThreadPool() = default;
-    explicit ThreadPool(int cnt_threads, HTTPServer* parent);
+    explicit ThreadPool(int cnt_threads, HttpServer* parent);
 
     void SendNewConn(int thread_id, const Connection &new_conn);
 
