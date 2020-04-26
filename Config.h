@@ -16,6 +16,7 @@ struct Config {
     std::string conf_dir;
     std::string data_dir;
     int read_chunk_size = 256;
+    int write_chunk_size = 256;
     std::vector<std::string> http_methods = {"GET"};
 };
 

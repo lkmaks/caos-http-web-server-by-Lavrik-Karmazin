@@ -7,6 +7,8 @@
 #include <inttypes.h>
 #include <sys/epoll.h>
 
+class EpollContext;
+
 struct EpollEvent {
     uint32_t events_mask;
     EpollContext *epoll_context;
@@ -30,10 +32,12 @@ public:
 
     int RemoveFileDescriptor(int fd);
 
+    int Rearm(int fd, uint32_t flags, EpollContext *context);
+
     // void ChangeEpollContext(int fd, EpollContext &epoll_context);
 
 private:
-    int epoll_fd;
+    int epoll_fd_;
 };
 
 #endif

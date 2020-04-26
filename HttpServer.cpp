@@ -34,18 +34,17 @@ HttpServer::HttpServer(const std::string &ipv4_addr, const std::string &conf_dir
   epoll_main_ = Epoll(config_.max_main_epoll_queue);
   int n_ports = server_ports.size();
   server_sockets_.resize(n_ports);
-  server_socket_epoll_contexts_.resize(n_ports);
   for (int i = 0; i < n_ports; ++i) {
     server_sockets_[i] = {socket(AF_INET, SOCK_STREAM, 0), server_ports[i]};
     #ifdef LOCAL
         int opt = 1;
         setsockopt(server_sockets_[i].first, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
     #endif
+    server_socket_epoll_contexts_.emplace_back(Connection(server_sockets_[i].first, server_ports[i]));
     epoll_main_.AddFileDescriptor(
             server_sockets_[i].first,
             EPOLLIN,
             &server_socket_epoll_contexts_[i]);
-    server_socket_epoll_contexts_[i].SetFd(server_sockets_[i].first);
   }
 }
 
@@ -97,7 +96,8 @@ void HttpServer::run() {
   while (true) {
     std::vector<EpollEvent> events = epoll_main_.Wait(config_.max_epoll_events_in_iteration, -1);
     for (auto event : events) {
-      int conn_socket = accept(((FdEpollContext*)event.epoll_context)->GetFd(), nullptr, nullptr);
+      int sock = ((ConnectionEpollContext*)event.epoll_context)->GetConn().sock;
+      int conn_socket = accept(sock, nullptr, nullptr);
       thread_pool_.SendNewConnToAnyThread(Connection(conn_socket));
     }
   }

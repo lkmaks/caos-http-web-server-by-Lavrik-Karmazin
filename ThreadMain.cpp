@@ -1,3 +1,10 @@
+//
+// Created by max on 4/26/20.
+//
+
+#include "ThreadMain.h"
+
+
 #ifndef CAOS_HTTP_WEB_SERVER_THREADMAIN_HPP
 #define CAOS_HTTP_WEB_SERVER_THREADMAIN_HPP
 
@@ -8,6 +15,22 @@
 #include "ConnectionQueue.h"
 #include "Config.h"
 #include "HttpServer.h"
+#include <string.h>
+#include <signal.h>
+
+
+thread_local sig_atomic_t sigpipe_flag = 0;
+
+void sigpipe_signal_handler(int signum) {
+  sigpipe_flag = 1;
+}
+
+void sigpipe_protection() {
+  struct sigaction action;
+  memset(&action, 0, sizeof(action));
+  action.sa_handler = sigpipe_signal_handler;
+  sigaction(SIGPIPE, &action, NULL);
+}
 
 
 class HttpServer;
@@ -18,15 +41,13 @@ Config &GetConf(ThreadData *thread_data) {
 
 
 void HandleEvent(EpollEvent &event) {
-  auto *context = (ProxyEpollContext*)(event.epoll_context);
   if (event.events_mask & EPOLLIN) {
-    context->HandleReadEvent();
+    ((HttpEpollContext*)event.epoll_context)->HandleRead();
   }
   if (event.events_mask & EPOLLOUT) {
-    context->HandleWriteEvent();
+    ((HttpEpollContext*)event.epoll_context)->HandleWrite();
   }
 }
-
 
 void *thread_main(void *ptr) {
   auto *thread_data = (ThreadData*)ptr;
@@ -41,6 +62,8 @@ void *thread_main(void *ptr) {
   // adds new connections to epoll, stores ones that do not fit in queue
   ConnectionQueue conn_queue(thread_epoll, channel_fd, GetConf(thread_data));
 
+  sigpipe_protection();
+
   while (true) {
     std::vector<EpollEvent> events = thread_epoll.Wait(GetConf(thread_data).max_epoll_events_in_iteration);
     for (auto e : events) {
@@ -51,6 +74,8 @@ void *thread_main(void *ptr) {
         // NOT IMPLEMENTED YET
         printf("%d\n", (int)(e.events_mask & EPOLLIN));
         printf("%d\n", (int)(e.events_mask & EPOLLOUT));
+        printf("%d\n", (int)(e.events_mask & EPOLLRDHUP));
+        printf("%d\n", (int)(e.events_mask & EPOLLHUP));
 
         HandleEvent(e);
       }

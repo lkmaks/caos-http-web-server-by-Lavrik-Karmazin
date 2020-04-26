@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 #include <vector>
-
+#include <inttypes.h>
 
 class HttpServer;
 
@@ -19,11 +19,14 @@ struct ThreadData {
 
 struct Connection {
     int sock;
+    uint16_t port;
     // maybe also ip address of the client
 
-    Connection() : sock(-1) {};
+    Connection() : sock(-1), port(0) {};
 
-    explicit Connection(int sock) : sock(sock) {}
+    explicit Connection(int sock) : sock(sock), port(0) {}
+
+    Connection(int sock, uint16_t port) : sock(sock), port(port) {}
 };
 
 class ThreadPool {

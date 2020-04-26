@@ -55,8 +55,7 @@ public:
 
     int AddConnection(Connection &conn) {
       modify_nonblock(conn.sock); // socket will be treated with EPOLLET semantics
-      auto *underlying_context = new InitialHttpEpollContext(conn.sock, config_);
-      auto *new_context = new ProxyEpollContext(underlying_context);
+      auto *new_context = new HttpEpollContext(conn, thread_epoll_, config_);
       return thread_epoll_.AddFileDescriptor(conn.sock, EPOLLET | EPOLLIN | EPOLLOUT, new_context);
     }
 

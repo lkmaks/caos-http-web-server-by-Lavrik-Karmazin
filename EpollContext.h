@@ -4,14 +4,20 @@
 #include <string>
 #include <stdexcept>
 #include "Config.h"
+#include "ThreadPool.h"
+#include "Epoll.h"
+#include "HttpParser.h"
+
+class Epoll;
+
 
 enum EpollContextType {
     DEFAULT,
     FD,
-    PROXY,
-    INITIAL_HTTP,
-    GET_HTTP
+    CONN,
+    HTTP
 };
+
 
 class EpollContext {
 public:
@@ -24,6 +30,7 @@ public:
 protected:
     EpollContextType type_;
 };
+
 
 class FdEpollContext : public EpollContext {
 public:
@@ -43,79 +50,68 @@ public:
       fd_ = fd;
     }
 
-protected:
+private:
     int fd_;
 };
 
-
-class HttpEpollContext : public FdEpollContext {
+class ConnectionEpollContext : public EpollContext {
 public:
-    // never used
-    explicit HttpEpollContext(int fd, Config &config) : config_(config), FdEpollContext(fd) {}
+    ConnectionEpollContext() : conn_() {
+      type_ = CONN;
+    }
 
-    virtual HttpEpollContext *HandleReadEvent() = 0;
-    virtual HttpEpollContext *HandleWriteEvent() = 0;
+    ConnectionEpollContext(Connection conn) : conn_(conn) {
+      type_ = CONN;
+    }
 
-protected:
+    Connection GetConn() {
+      return conn_;
+    }
+
+private:
+    Connection conn_;
+};
+
+class HttpEpollContext : public EpollContext {
+public:
+    HttpEpollContext(Connection &conn, Epoll &epoll, Config &config);
+
+    void HandleRead();
+    void HandleWrite();
+
+private:
+    Connection conn_;
+    Epoll &epoll_;
     Config &config_;
-};
 
-
-class InitialHttpEpollContext : public HttpEpollContext {
-public:
-    explicit InitialHttpEpollContext(int fd, Config &config) : HttpEpollContext(fd, config) {
-      type_ = INITIAL_HTTP;
-    }
-
-    HttpEpollContext *HandleReadEvent();
-    HttpEpollContext *HandleWriteEvent();
-private:
     std::string data_;
+    int data_ptr_; // on first unprocessed character
+
+    // utility methods
+    void DestroyContext();
+    int ReadSome();
+    void Rearm();
+    void TransitToError(int error_no);
+    void TransitToWrite(const std::string &write_data);
+
+    void InitReadFields();
+    void InitWriteFields(const std::string &write_data);
+
+    void ParseRequestHeaders();
+
+    // current stage field
+    bool is_read_stage_;
+
+    // read fields
+    bool first_line_ready_;
+    int first_line_end_;
+    HttpFirstLine first_line_;
+    HttpHeaders request_headers_;
+
+    // write fields
+    int write_data_ptr_;
+    std::string write_data_;
 };
 
-class GetHttpEpollContext : public HttpEpollContext {
-public:
-    explicit GetHttpEpollContext(int fd, Config &config, std::string &uri, std::string &data, int ptr) :
-                        uri_(std::move(uri)), data_(std::move(data)), data_ptr_(ptr), HttpEpollContext(fd, config) {
-      type_ = GET_HTTP;
-    }
-
-    HttpEpollContext *HandleReadEvent();
-    HttpEpollContext *HandleWriteEvent();
-private:
-    std::string uri_;
-    std::string data_;
-    int data_ptr_;
-};
-
-
-struct ProxyEpollContext : public EpollContext {
-public:
-    ProxyEpollContext() {
-      type_ = PROXY;
-    }
-
-    explicit ProxyEpollContext(HttpEpollContext *context) : real_(context) {
-      type_ = PROXY;
-    }
-
-    void HandleReadEvent() {
-      real_ = real_->HandleReadEvent();
-      if (real_ == nullptr) {
-        // an error occurred (?)
-        throw std::logic_error("Handling read event unsuccessful.");
-      }
-    };
-
-    void HandleWriteEvent() {
-      real_ = real_->HandleWriteEvent();
-      if (real_ == nullptr) {
-        // an error occurred (?)
-        throw std::logic_error("Handling write event unsuccessful.");
-      }
-    }
-private:
-    HttpEpollContext *real_;
-};
 
 #endif

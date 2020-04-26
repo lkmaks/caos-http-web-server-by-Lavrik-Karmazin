@@ -40,3 +40,17 @@ void write_all(int fd, void *buf, int count) {
     total += write(fd, buf, count - total);
   }
 }
+
+std::vector<std::string> split(const std::string &str, char c) {
+  std::vector<std::string> res;
+  int i = 0;
+  while (i < str.size()) {
+    int j = i;
+    while (j < str.size() && str[j] != c) {
+      ++j;
+    }
+    res.push_back(str.substr(i, j - i));
+    i = j + 1;
+  }
+  return res;
+}
