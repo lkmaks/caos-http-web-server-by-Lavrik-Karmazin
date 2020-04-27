@@ -4,6 +4,9 @@
 #include <vector>
 #include "ThreadPool.h"
 #include <unistd.h>
+#include <string>
+#include "debug.h"
+#include <iostream>
 
 
 class ConnectionsReader {
@@ -54,6 +57,7 @@ public:
             thread_epoll_(thread_epoll), connection_reader(channel_fd), config_(config) {}
 
     int AddConnection(Connection &conn) {
+      deb("Add conn into epoll_addr " + std::to_string(reinterpret_cast<long long>(&thread_epoll_)) + " sock " + std::to_string(conn.sock));
       modify_nonblock(conn.sock); // socket will be treated with EPOLLET semantics
       auto *new_context = new HttpEpollContext(conn, thread_epoll_, config_);
       return thread_epoll_.AddFileDescriptor(conn.sock, EPOLLET | EPOLLIN | EPOLLOUT, new_context);

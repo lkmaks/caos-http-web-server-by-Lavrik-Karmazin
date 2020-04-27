@@ -13,8 +13,6 @@ Epoll::Epoll(int size) {
 std::vector<EpollEvent> Epoll::Wait(int max_events, int timeout) {
   epoll_event events[max_events];
   int cnt = epoll_wait(epoll_fd_, events, max_events, timeout);
-  printf("epoll_wait: %d\n", cnt);
-  fflush(stdout);
   std::vector<EpollEvent> result(cnt);
   for (int i = 0; i < cnt; ++i) {
     result[i] = EpollEvent(events[i].events, events[i].data);

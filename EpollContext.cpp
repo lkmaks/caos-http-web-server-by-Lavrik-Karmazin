@@ -9,6 +9,9 @@
 #include <algorithm>
 #include <sstream>
 #include <sys/socket.h>
+#include <iostream>
+#include "debug.h"
+
 
 
 HttpEpollContext::HttpEpollContext(Connection &conn, Epoll &epoll, Config &config) :
@@ -63,6 +66,15 @@ void HttpEpollContext::TransitToError(int error_no) {
   if (error_no == 400) {
     TransitToWrite("HTTP/1.1 400 Bad Request\r\n\r\n");
   }
+  else if (error_no == 404) {
+    TransitToWrite("HTTP/1.1 404 Not Found\r\n\r\n");
+  }
+  else if (error_no == 405) {
+    TransitToWrite("HTTP/1.1 405 Method Not Allowed\r\n\r\n");
+  }
+  else if (error_no == 501) {
+    TransitToWrite("HTTP/1.1 501 Not Implemented\r\n\r\n");
+  }
 }
 
 void HttpEpollContext::TransitToWrite(const std::string &str) {
@@ -91,12 +103,13 @@ void HttpEpollContext::HandleRead() {
 
       if (data_ptr_ < data_.size()) {
         // found end of first line
-        if (is_ok_http_firstline(data_, data_ptr_, config_.http_methods, first_line_)) {
+        if (is_ok_http_firstline(data_, data_ptr_ - 1, config_.http_methods, first_line_)) {
           // first_line_ is filled by the call
           first_line_ready_ = true;
           first_line_end_ = data_ptr_;
           break;
-        } else {
+        }
+        else {
           // invalid first line of HTTP query
           TransitToError(400);
           return;
@@ -116,6 +129,8 @@ void HttpEpollContext::HandleRead() {
     }
   }
 
+
+
   // first line is ready and correct; first_line_ field is filled
 
   if (first_line_.method == "GET") {
@@ -125,9 +140,12 @@ void HttpEpollContext::HandleRead() {
       }
       if (data_ptr_ < data_.size()) {
         // found end of headers
-        if (is_ok_header_section(data_, first_line_end_ + 1, data_ptr_ - 4, request_headers_)) {
+        if (is_ok_header_section(data_, first_line_end_ + 1, data_ptr_ - 3, request_headers_)) {
           // headers are filled
           break;
+        }
+        else {
+          TransitToError(400);
         }
       }
 
@@ -157,6 +175,7 @@ void HttpEpollContext::ParseRequestHeaders() {
     TransitToError(400);
     return;
   }
+
   std::string host = request_headers_.dict["Host"];
   std::string hostname, port_str;
   auto pos = host.find(':');
@@ -180,6 +199,7 @@ void HttpEpollContext::ParseRequestHeaders() {
     TransitToError(404);
     return;
   }
+
 
   // hostname and port are determined (step 1 finished)
 
@@ -229,8 +249,9 @@ void HttpEpollContext::ParseRequestHeaders() {
       TransitToError(400);
       return;
     }
-    // since all gettable files are interpreted as ISO 8859-1, check if it is on the list
-    if (std::find(charsets.begin(), charsets.end(), "ISO 8859-1") == charsets.end()) {
+    // since all gettable files are interpreted as utf-8, check if it is on the list
+    if (std::find(charsets.begin(), charsets.end(), "utf-8") == charsets.end() &&
+            std::find(charsets.begin(), charsets.end(), "UTF-8") == charsets.end()) {
       TransitToError(501); // Not Implemented
       return;
     }
@@ -255,9 +276,9 @@ void HttpEpollContext::ParseRequestHeaders() {
   // Connection would be "close" for now
   std::ostringstream stream;
   stream << "HTTP/1.1 200 OK\r\n";
-  stream << "Content-Type: text/html; ISO 8859-1\r\n";
+  stream << "Content-Type: text/html; charset=utf-8\r\n";
   stream << "Content-Length: " << file_size(path) << "\r\n";
-  stream << "Connection: close\r\n";
+  stream << "Connection: close\r\n\r\n";
   stream << file_contents(path);
   TransitToWrite(stream.str());
 }

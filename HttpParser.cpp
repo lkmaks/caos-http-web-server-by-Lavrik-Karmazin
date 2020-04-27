@@ -7,15 +7,15 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "Utils.h"
+#include "debug.h"
 
 typedef std::string::size_type size_type;
 
 
 bool is_substr(const std::string &t, const std::string &s, int pos) {
   // is t a susbtr of s from position pos in s
-  if (pos < 0 || pos >= s.size()) {
-    return false;
-  }
+  // pos is correct position in s
+
   if (pos + t.size() > s.size()) {
     return false;
   }
@@ -35,7 +35,6 @@ bool is_okay_uri(const std::string &uri) {
 
 bool is_ok_http_firstline(const std::string &data, int end_pos,
                           std::vector<std::string> &http_methods, HttpFirstLine &first_line) {
-  bool ok_start = false;
   std::string right_method;
   for (auto &method : http_methods) {
     if (is_substr(method, data, 0)) {
@@ -47,18 +46,18 @@ bool is_ok_http_firstline(const std::string &data, int end_pos,
   }
 
   std::string ending("HTTP/1.1");
-  if (!is_substr(ending, data, (int)data.size() - (int)ending.size())) {
+  if (!is_substr(ending, data, (int)end_pos - (int)ending.size())) {
     return false;
   }
 
   int uri_len = end_pos - (int)(right_method.size() + ending.size() + 2);
   if (uri_len <= 0 ||
       data[right_method.size()] != ' ' ||
-      data[data.size() - ending.size() - 1] != ' ') {
+      data[end_pos - ending.size() - 1] != ' ') {
     return false;
   }
 
-  std::string uri = data.substr(right_method.size() + 1, end_pos - ending.size());
+  std::string uri = data.substr(right_method.size() + 1, uri_len);
   if (!is_okay_uri(uri)) {
     return false;
   }
@@ -73,7 +72,7 @@ bool is_ok_http_firstline(const std::string &data, int end_pos,
 bool is_ok_header_section(const std::string &data, int start_pos, int end_pos, HttpHeaders &headers) {
   std::map<std::string, std::string> result;
   size_type i = start_pos;
-  while (i < data.size()) {
+  while (i < end_pos) {
     size_type j = data.find("\r\n", i);
     if (j == std::string::npos) {
       j = data.size();
@@ -86,6 +85,7 @@ bool is_ok_header_section(const std::string &data, int start_pos, int end_pos, H
     std::string left = cur_str.substr(0, pos);
     std::string right = cur_str.substr(pos + 2, cur_str.size() - (pos + 2));
     result[left] = right;
+    i = j + 2;
   }
   headers.dict = std::move(result);
   return true;
@@ -109,23 +109,20 @@ bool is_http_end_of_headers(const std::string &data, int pos) {
 
 bool is_ok_path(const std::string &path) {
   // check if path is of template:
-  // /{s_1}/.../{s_n}, s_i does not contain '/' or '.'
-  if (path.empty()) {
+  // /{s_1}/.../{s_n}, s_i does not contain '/', is not '.' or '..', is not empty
+
+  auto arr = split(path, '/');
+  if (arr.empty()) {
     return false;
   }
-  if (path[0] != '/') {
+  if (arr[0] != "") {
     return false;
   }
-  if (path.find('.') != std::string::npos) {
-    return false;
-  }
-  for (int i = 0; i + 1 < path.size(); ++i) {
-    if (path[i] == '/' && path[i + 1] == '/') {
+
+  for (int i = 1; i < arr.size(); ++i) {
+    if (arr[i] == "" || arr[i] == "." || arr[i] == "..") {
       return false;
     }
-  }
-  if (path.back() == '/') {
-    return false;
   }
 
   return true;
@@ -134,9 +131,11 @@ bool is_ok_path(const std::string &path) {
 bool file_exists(const std::string &path) {
   // assume is_ok_path(path)
   FILE *file = fopen(path.c_str(), "r");
-  bool res = (file != nullptr);
+  if (!file) {
+    return false;
+  }
   fclose(file);
-  return res;
+  return true;
 }
 
 bool is_gettable_file(const std::string &path, Config &config) {
