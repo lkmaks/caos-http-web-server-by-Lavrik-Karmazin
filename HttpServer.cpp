@@ -17,8 +17,7 @@ Config &HttpServer::GetConf() {
   return config_;
 }
 
-HttpServer::HttpServer(const std::string &ipv4_addr, const std::string &conf_dir, const std::string &data_dir) :
-                       ipv4_addr_(ipv4_addr) {
+HttpServer::HttpServer(const std::string &conf_dir, const std::string &data_dir) {
   if (!load_config(conf_dir, data_dir)) {
     throw std::logic_error("Bad vhosts.txt file");
   }
@@ -54,8 +53,12 @@ bool HttpServer::load_config(const std::string &conf_dir, const std::string &dat
   config_.data_dir = data_dir;
 
   std::ifstream vhosts_file;
-  vhosts_file.open(conf_dir + "/vhosts.txt");
+  vhosts_file.open(conf_dir + "/vhosts.conf");
   std::string cur_string;
+  getline(vhosts_file, ipv4_addr_);
+  if (!is_ok_ipv4_address(ipv4_addr_)) {
+    throw std::logic_error("Incorrect ip address.");
+  }
   while (getline(vhosts_file, cur_string)) {
     if (cur_string.empty()) {
       continue;

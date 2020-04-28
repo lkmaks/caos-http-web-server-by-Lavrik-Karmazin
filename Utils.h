@@ -14,4 +14,6 @@ void write_all(int fd, void *buf, int count);
 
 std::vector<std::string> split(const std::string &str, char c);
 
+bool is_ok_ipv4_address(const std::string &ipv4_addr);
+
 #endif

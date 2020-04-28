@@ -10,7 +10,6 @@ void modify_nonblock(int fd) {
   fcntl(fd, F_SETFL, flags);
 }
 
-
 bool is_ok_hostname(const std::string &hostname) {
   for (char c : hostname) {
     if (!isalnum(c) && c != '.') {
@@ -53,4 +52,25 @@ std::vector<std::string> split(const std::string &str, char c) {
     i = j + 1;
   }
   return res;
+}
+
+bool is_ok_ipv4_address(const std::string &ipv4_addr) {
+  auto vec = split(ipv4_addr, '.');
+  if (vec.size() != 4) {
+    return false;
+  }
+
+  for (auto &str : vec) {
+    if (!is_natural_number(str) && str != "0") {
+      return false;
+    }
+    if (str.size() > 3) {
+      return false;
+    }
+    int val = strtol(str.c_str(), NULL, 10);
+    if (val >= 256) {
+      return false;
+    }
+  }
+  return true;
 }
