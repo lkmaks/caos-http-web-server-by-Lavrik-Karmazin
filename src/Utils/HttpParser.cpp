@@ -6,8 +6,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "Utils.h"
-#include "debug.h"
+#include "GeneralUtils.h"
+#include "Debug.hpp"
 
 typedef std::string::size_type size_type;
 

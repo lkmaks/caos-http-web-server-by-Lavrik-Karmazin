@@ -1,6 +1,6 @@
 #include "ThreadPool.h"
-#include "Utils.h"
-#include "ThreadMain.h"
+#include "GeneralUtils.h"
+#include "../ThreadMain.h"
 #include <sys/socket.h>
 
 class HttpServer;

@@ -4,13 +4,13 @@
 
 #include "EpollContext.h"
 #include <unistd.h>
-#include "HttpParser.h"
+#include "Utils/HttpParser.h"
 #include "ThreadMain.h"
 #include <algorithm>
 #include <sstream>
 #include <sys/socket.h>
 #include <iostream>
-#include "debug.h"
+#include "Utils/Debug.hpp"
 
 
 

@@ -4,9 +4,9 @@
 #include <string>
 #include <stdexcept>
 #include "Config.h"
-#include "ThreadPool.h"
-#include "Epoll.h"
-#include "HttpParser.h"
+#include "Utils/ThreadPool.h"
+#include "Utils/Epoll.h"
+#include "Utils/HttpParser.h"
 
 class Epoll;
 

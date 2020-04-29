@@ -1,5 +1,5 @@
-#ifndef CAOS_HTTP_WEB_SERVER_UTILS_H
-#define CAOS_HTTP_WEB_SERVER_UTILS_H
+#ifndef CAOS_HTTP_WEB_SERVER_GENERALUTILS_H
+#define CAOS_HTTP_WEB_SERVER_GENERALUTILS_H
 
 #include <string>
 #include <vector>

@@ -10,14 +10,14 @@
 
 
 #include <queue>
-#include "Epoll.h"
-#include "ThreadPool.h"
-#include "ConnectionQueue.h"
+#include "Utils/Epoll.h"
+#include "Utils/ThreadPool.h"
+#include "Utils/ConnectionQueue.hpp"
 #include "Config.h"
 #include "HttpServer.h"
 #include <string.h>
 #include <signal.h>
-#include "debug.h"
+#include "Utils/Debug.hpp"
 
 
 thread_local sig_atomic_t sigpipe_flag = 0;

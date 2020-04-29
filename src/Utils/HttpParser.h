@@ -3,7 +3,7 @@
 
 #include <string>
 #include <map>
-#include "Config.h"
+#include "../Config.h"
 
 struct HttpFirstLine {
     std::string method;

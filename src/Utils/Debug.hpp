@@ -1,5 +1,5 @@
-#ifndef CAOS_HTTP_WEB_SERVER_DEBUG_H
-#define CAOS_HTTP_WEB_SERVER_DEBUG_H
+#ifndef CAOS_HTTP_WEB_SERVER_DEBUG_HPP
+#define CAOS_HTTP_WEB_SERVER_DEBUG_HPP
 
 #include <iostream>
 
@@ -17,4 +17,4 @@ void deb(T1 s, T2 t) {
 #endif
 }
 
-#endif //CAOS_HTTP_WEB_SERVER_DEBUG_H
+#endif //CAOS_HTTP_WEB_SERVER_DEBUG_HPP

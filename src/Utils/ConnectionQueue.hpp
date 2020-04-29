@@ -1,11 +1,11 @@
-#ifndef CAOS_HTTP_WEB_SERVER_CONNECTIONQUEUE_H
-#define CAOS_HTTP_WEB_SERVER_CONNECTIONQUEUE_H
+#ifndef CAOS_HTTP_WEB_SERVER_CONNECTIONQUEUE_HPP
+#define CAOS_HTTP_WEB_SERVER_CONNECTIONQUEUE_HPP
 
 #include <vector>
 #include "ThreadPool.h"
 #include <unistd.h>
 #include <string>
-#include "debug.h"
+#include "Debug.hpp"
 #include <iostream>
 
 
@@ -96,4 +96,4 @@ private:
     Config &config_;
 };
 
-#endif //CAOS_HTTP_WEB_SERVER_CONNECTIONQUEUE_H
+#endif //CAOS_HTTP_WEB_SERVER_CONNECTIONQUEUE_HPP
