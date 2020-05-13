@@ -1,5 +1,80 @@
 #!/usr/bin/python3
 import os
+import subprocess as sb
+import crypt
+
+
+class Config:
+	def __init__(self):
+		self.install_dir = '/home/max/caos-http-web-server'
+		self.conf_dir = self.install_dir + '/conf.d'
+		self.data_dir = self.install_dir + '/data'
+		self.vhosts_file = self.conf_dir + '/vhosts.conf'
+		self.pid_file = self.install_dir + '/run.pid'
+		self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
+		self.main_executable_name = 'caos-http-web-server'
+		self.launcher_name = 'caos-http-web-server-launcher'
+		self.user_comment = 'User for installing & running caos-http-web-server http daemon.'
+		self.user_password = 'password32'
+		self.user_password_salt = '07'
+		self.user_login = 'caos-httpd-lavrik'
+		self.user_uid = None
+
+class Installer:
+	def __init__(self, config):
+		self.config = config
+
+	def Install(self):
+		report = self.CheckInstallation()
+		if report != 'OK':
+			raise Exception('Cannot install to this system: {}'.format(report))
+		self.CreateUser()
+		self.BecomeUser(self.config.user_uid, self.config.user_gid)
+		self.CreateFiles()
+		self.CreateExampleConfig()
+		self.CreateExampleData()
+		self.BuildExecutable()
+		self.BecomeUser(0, 0) # BECOME ROOT AGAIN!
+		self.CreateUnitFile()
+
+	def CheckInstallation(self):
+		return 'OK'
+
+	def CreateUser(self):
+		sb.run(['useradd',
+				'--home-dir', self.config.install_dir, # home directory
+				'--no-create-home',                    # don't create home dir yet
+				'--comment', self.config.user_comment, # comment (user's full name)
+				'--expiredate', '',                    # no expiration date
+				'--user-group',                        # create a group for the user with the same name
+				'--password', crypt.crypt(             # password option
+				self.config.user_password,             # actual password
+				self.config.user_password_salt),       # salt to hash the password with
+				self.config.user_login])               # user's name
+		# get uid, gid of created user
+		self.config.user_uid, self.config.user_gid = self.getids(self.config.user_login)
+
+	def BecomeUser(self, uid, gid):
+		os.seteuid(uid)
+		os.setegid(gid)
+
+	def CreateFiles(self):
+		os.mkdir(self.config.install_dir, 0o777)
+		os.mkdir(self.config.conf_dir, 0o777)
+		os.mkdir(self.config.data_dir, 0o777)
+
+	def getids(self, login):
+		result = sb.run(['id', login], stdout=sb.PIPE, stderr=sb.PIPE)
+
+		l = result.stdout.find('uid=')
+		r = result.stdout.find('(', l)
+		uid = result[l + len('uid='):r]
+
+		l = result.stdout.find('gid=')
+		r = result.stdout.find('(', l)
+		gid = result[l + len('uid='):r]
+
+		return {'uid': uid, 'gid': gid}
 
 
 def error(mes):
@@ -7,37 +82,7 @@ def error(mes):
 	exit(0)
 
 
-# pre-set server directories/files
-install_dir = '/home/max/caos-http-web-server'
-conf_dir = install_dir + '/conf.d'
-data_dir = install_dir + '/data'
-vhosts_file = conf_dir + '/vhosts.conf'
 
-# created by launcher
-pid_file = install_dir + '/run.pid'
-
-# (probably) needs privelleges
-unit_file = '/lib/systemd/system/caos-http-web-server.service'
-
-
-def init_dirs():
-	global install_dir
-	global conf_dir
-	global data_dir
-	global vhosts_file
-	global pid_file
-	s = input('Install directory: ')
-	s = s.strip()
-	if s == '':
-		print('Using default script value (empty string provided)')
-		return
-	directory = os.path.abspath(s)
-	install_dir = directory
-	conf_dir = install_dir + '/conf.d'
-	data_dir = install_dir + '/data'
-	vhosts_file = conf_dir + '/vhosts.conf'
-	pid_file = install_dir + '/run.pid'
-	print('Installing into {}'.format(install_dir))
 
 
 def init_data():
@@ -53,7 +98,7 @@ def create_files():
 	os.system("mkdir {}".format(data_dir))
 	with open(vhosts_file, 'w+') as file:
 		file.write('0.0.0.0\n127.0.0.1:8080\n')
-	init_data();
+	init_data()
 
 
 init_dirs()
