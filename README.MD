@@ -7,16 +7,15 @@ after installation.
 
 <h3>Installation, running and deinstallation</h3>
 1) Clone the repository directory. 
-2) Run "sudo install.py" from the repository directory. Insert the absolute installation path, to a directory,
+2) Run "sudo install.py" from repository directory. Insert the absolute installation path, to a directory,
 where you want to install the server (and where its configuration and data will be). Server folder will be created
 inside the specified directory.
 3) After that following commands can be used for interacting with the server:
     - sudo systemctl start caos-http-web-server
     - sudo systemctl stop caos-http-web-server
     - sudo systemctl status caos-http-web-server<br>
-4) In order to uninstall the server, run "sudo uninstall.py" from anywhere.
-Insert the absolute path to installation directory (which will be deleted). You will have to
-confirm that you want delete that directory.
+4) In order to uninstall the server, run "sudo uninstall.py" from repository directory.
+Insert the absolute path to installation directory (it will be deleted, among with other server files).
     
 All data that server serves is defined in $installation_dir/data, which should contain a directory
 for each virtual host (which are in turn described in $installation_dir/conf.d/vhosts.conf).<br><br>
