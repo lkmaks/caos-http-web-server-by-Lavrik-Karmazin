@@ -1,8 +1,8 @@
-1) Server user, installation not from root, running not from root (what's the best we can do?)
-2) More optimal data/conf location
-3) Server should shut down if it could not configure itself to listen on ports, load config, etc.
+1) More optimal data/conf location
+2) Server should shut down if it could not configure itself to listen on ports, load config, etc.
 It should also output the problem.
-4) Installation scripts mess with bash history
-5) Input validation for installation scripts; also make them more adequate (no personal folders in code)
-6) Code documentation
-7) Better organization of repository files.
+3) Input validation for installation scripts
+4) Code documentation
+5) Which rights do we want to have for different files/dirs of server?
+6) Avoid active port binding
+7) Graceful handling of systemctl stop (for correct status)

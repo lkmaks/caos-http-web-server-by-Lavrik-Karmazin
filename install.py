@@ -4,13 +4,14 @@ import subprocess as sb
 import crypt
 
 
-class Config:
-	def __init__(self):
-		self.install_dir = '/home/max/caos-http-web-server'
+class InstallationConfig:
+	def __init__(self, install_dir):
+		self.install_dir = install_dir + '/caos-http-web-server'
 		self.conf_dir = self.install_dir + '/conf.d'
 		self.data_dir = self.install_dir + '/data'
 
 		self.vhosts_file = self.conf_dir + '/vhosts.conf'
+		self.username_file = self.conf_dir + '/server_user.conf'
 		self.pid_file = self.install_dir + '/run.pid'
 		self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
 
@@ -20,11 +21,14 @@ class Config:
 		self.user_comment = 'User for installing & running caos-http-web-server http daemon.'
 		self.user_password = 'password32'
 		self.user_password_salt = '07'
-		self.user_login = 'caos-httpd-lavrik'
+		self.user_login = 'caos-http-web-server-user'
 		self.user_uid = None
 
 		with open('install_data/vhosts.conf', 'r') as file:
 			self.vhosts_default = file.read()
+
+		with open('install_data/server_user.conf', 'r') as file:
+			self.server_user_name_default = file.read().strip()
 
 
 class Installer:
@@ -36,20 +40,19 @@ class Installer:
 		report = self.CheckInstallation()
 		if report != 'OK':
 			raise Exception('Cannot install to this system: {}'.format(report))
+		os.umask(0)
 		self.CreateUser()
-		self.BecomeUser(self.config.user_uid, self.config.user_gid)
 		self.CreateDirs()
 		self.CreateDefaultConfig()
 		self.CreateDefaultData()
 		self.BuildExecutable()
-		self.BecomeUser(0, 0) # BECOME ROOT AGAIN!
 		self.CreateUnitFile()
 		self.EnableUnitFile()
 
 
 	def CheckInstallation(self):
 		""" Check if current state of the system is suitable for installing the server """
-		return 'OK'
+		return 'OK' # for now
 
 
 	def CreateUser(self):
@@ -64,12 +67,14 @@ class Installer:
 					self.config.user_password_salt),       # salt to hash the password with
 					self.config.user_login])               # user's name
 		# get uid, gid of created user
-		self.config.user_uid, self.config.user_gid = self.getids(self.config.user_login)
+		ids = self.getids(self.config.user_login)
+		self.config.user_uid = ids['uid']
+		self.config.user_gid = ids['gid']
 
 
 	def BecomeUser(self, uid, gid):
-		os.seteuid(uid)
 		os.setegid(gid)
+		os.seteuid(uid)
 
 
 	def CreateDirs(self):
@@ -81,16 +86,23 @@ class Installer:
 	def CreateDefaultConfig(self):
 		with open(self.config.vhosts_file, 'w') as file:
 			file.write(self.config.vhosts_default)
+		os.chmod(self.config.vhosts_file, 0o666)
+		with open(self.config.username_file, 'w') as file:
+			file.write(self.config.server_user_name_default)
+		os.chmod(self.config.username_file, 0o666)
 
 
 	def CreateDefaultData(self):
 		# vhost directory
-		vhost_dir = self.config.install_dir + '/127.0.0.1'
+		vhost_dir = self.config.data_dir + '/127.0.0.1'
 		os.mkdir(vhost_dir, 0o777)
+
 		# html file
-		with open(vhost_dir + '/index.html', 'w') as dest:
+		os.mkdir(vhost_dir + '/static', 0o777)
+		with open(vhost_dir + '/static/index.html', 'w') as dest:
 			with open('install_data/index.html', 'r') as src:
 				dest.write(src.read())
+		os.chmod(vhost_dir + '/static/index.html', 0o666)
 
 
 	def BuildExecutable(self):
@@ -109,7 +121,7 @@ class Installer:
 		self.saferun(['g++',
 					  '--std=c++11',
 					  '-o', self.config.launcher_name,
-					  'launcher.cpp'])
+					  '../launcher.cpp'])
 		self.saferun(['mv',
 					  self.config.launcher_name,
 					  '{}/{}'.format(self.config.install_dir, self.config.launcher_name)])
@@ -127,12 +139,13 @@ class Installer:
 		launcher_file = '{}/{}'.format(self.config.install_dir, self.config.launcher_name)
 		main_file = '{}/{}'.format(self.config.install_dir, self.config.main_executable_name)
 
-		exec_start_cmd = '{} {} {} {} {}'.format(
+		exec_start_cmd = '{} {} {} {} {} {}'.format(
 			launcher_file, 		  # run launcher; pass further parameters to it
 			main_file, 			  # the server that launcher will launch
 			self.config.conf_dir, # server configuration dir
 			self.config.data_dir, # server configuration dir
-			self.config.pid_file) # pidfile which launcher will write pid to
+			self.config.pid_file, # pidfile which launcher will write pid to
+			self.config.user_uid) # server user id to run under
 
 		unit = unit_template.format(self.config.pid_file,
 									exec_start_cmd,
@@ -163,13 +176,15 @@ class Installer:
 	def getids(self, login):
 		result = sb.run(['id', login], stdout=sb.PIPE, stderr=sb.PIPE)
 
-		l = result.stdout.find('uid=')
-		r = result.stdout.find('(', l)
-		uid = result[l + len('uid='):r]
+		s = str(result.stdout)
 
-		l = result.stdout.find('gid=')
-		r = result.stdout.find('(', l)
-		gid = result[l + len('uid='):r]
+		l = s.find('uid=')
+		r = s.find('(', l)
+		uid = int(s[l + len('uid='):r])
+
+		l = s.find('gid=')
+		r = s.find('(', l)
+		gid = int(s[l + len('uid='):r])
 
 		return {'uid': uid, 'gid': gid}
 
@@ -178,3 +193,14 @@ def error(mes):
 	print(mes)
 	exit(0)
 
+def main():
+	install_dir = input('Directory to install server to (server will create its directory inside that): ')
+	install_conf = InstallationConfig(install_dir)
+	installer = Installer(install_conf)
+	installer.Install()
+
+if __name__ == '__main__':
+	main()
+	# install_conf = InstallationConfig()
+	# installer = Installer(install_conf)
+	# print(installer.getids('root'))
