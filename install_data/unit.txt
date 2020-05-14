@@ -1,0 +1,14 @@
+[Unit]
+Description=A simple http server hosting static content and cgi scripts
+After=network.target
+
+[Service]
+Type=forking
+PIDFile={}
+ExecStart={}
+ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile {}
+TimeoutStopSec=5
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
