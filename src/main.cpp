@@ -12,8 +12,8 @@ int main(int argc, char **argv) {
   // create server (load configs) - as root
   HttpServer server(argv[1], argv[2]);
 
-  seteuid(strtol(argv[3], nullptr, 10));
-  setegid(strtol(argv[4], nullptr, 10));
+  //seteuid(strtol(argv[3], nullptr, 10));
+  //setegid(strtol(argv[4], nullptr, 10));
 
   // run - as requested user
   server.run();

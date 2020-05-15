@@ -4,6 +4,7 @@
 
 #include "Epoll.h"
 #include <sys/epoll.h>
+#include <unistd.h>
 
 
 Epoll::Epoll(int size) {

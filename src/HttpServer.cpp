@@ -9,6 +9,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <unistd.h>
+#include "Utils/Debug.hpp"
 
 typedef std::string::size_type size_type;
 
@@ -39,11 +41,12 @@ HttpServer::HttpServer(const std::string &conf_dir, const std::string &data_dir)
         int opt = 1;
         setsockopt(server_sockets_[i].first, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
     #endif
-    server_socket_epoll_contexts_.emplace_back(Connection(server_sockets_[i].first, server_ports[i]));
+    auto *ptr = new ConnectionEpollContext(Connection(server_sockets_[i].first, server_ports[i]));
+    server_socket_epoll_contexts_.push_back(ptr);
     epoll_main_.AddFileDescriptor(
             server_sockets_[i].first,
             EPOLLIN,
-            &server_socket_epoll_contexts_[i]);
+            server_socket_epoll_contexts_[i]);
   }
 }
 

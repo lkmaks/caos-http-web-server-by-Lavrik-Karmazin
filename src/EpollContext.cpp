@@ -207,18 +207,14 @@ void HttpEpollContext::ParseRequestHeaders() {
   while (path.back() == '/') {
     path.pop_back();
   }
-  deb("1");
   if (!is_ok_path(path)) {
     TransitToError(400);
     return;
   }
-  deb("2");
-  deb(path);
   if (!file_exists(path)) {
     TransitToError(404);
     return;
   }
-  deb("3");
   if (!is_gettable_file(path, config_)) {
     TransitToError(405); // Method Not Allowed
     return;

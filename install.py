@@ -6,6 +6,7 @@ import crypt
 
 class InstallationConfig:
 	def __init__(self, install_dir):
+		install_dir = os.path.abspath(install_dir)
 		self.install_dir = install_dir + '/caos-http-web-server'
 		self.conf_dir = self.install_dir + '/conf.d'
 		self.data_dir = self.install_dir + '/data'

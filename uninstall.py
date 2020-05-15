@@ -4,7 +4,7 @@ import subprocess as sb
 
 class Deinstallator:
 	def __init__(self, install_dir):
-		self.install_dir = install_dir
+		self.install_dir = os.path.abspath(install_dir)
 		self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
 		self.server_user = 'caos-http-web-server-user'
 

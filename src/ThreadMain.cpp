@@ -1,4 +1,4 @@
-//
+  //
 // Created by max on 4/26/20.
 //
 
@@ -67,13 +67,11 @@ void *thread_main(void *ptr) {
 
   while (true) {
     std::vector<EpollEvent> events = thread_epoll.Wait(GetConf(thread_data).max_epoll_events_in_iteration);
-    deb("Thread waking up: ", thread_data->thread);
     for (auto e : events) {
       if (e.epoll_context->GetType() == FD && ((FdEpollContext*)e.epoll_context)->GetFd() == channel_fd) {
         conn_queue.AddNewConnections();
       }
       else {
-        // NOT IMPLEMENTED YET
         HandleEvent(e);
       }
     }

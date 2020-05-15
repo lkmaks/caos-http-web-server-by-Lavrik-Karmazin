@@ -24,7 +24,7 @@ private:
     ThreadPool thread_pool_;
     Epoll epoll_main_;
     std::vector<std::pair<int, uint16_t> > server_sockets_; // {sock, port}
-    std::vector<ConnectionEpollContext> server_socket_epoll_contexts_;
+    std::vector<ConnectionEpollContext*> server_socket_epoll_contexts_;
 };
 
 #endif
