@@ -4,7 +4,7 @@ import subprocess as sb
 
 class Deinstallator:
 	def __init__(self, install_dir):
-		self.install_dir = os.path.abspath(install_dir)
+		self.install_dir = install_dir
 		self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
 		self.server_user = 'caos-http-web-server-user'
 
@@ -29,13 +29,13 @@ class Deinstallator:
 			return res
 
 def main():
-	install_dir = input('Installation directory (full path to server\'s folder, e.g. /home/cao/caos-http-web-server): ')
+	install_dir = input('Installation directory (path to server\'s folder, e.g. /home/seriy/caos-http-web-server): ')
 	confirm = input('Are you sure that this is the absolute path to'
 					' the installation directory of caos-http-web-server?\n'
 		  			'{}\n'
-		  			'Answer (y or n): '.format(install_dir))
+		  			'Answer (y or n): '.format(os.path.abspath(install_dir)))
 	if confirm == 'y':
-		deinstallator = Deinstallator(install_dir)
+		deinstallator = Deinstallator(os.path.abspath(install_dir))
 		deinstallator.deinstall()
 	else:
 		print('Aborting')

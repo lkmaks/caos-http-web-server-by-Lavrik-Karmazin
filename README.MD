@@ -29,6 +29,7 @@ Let $DIR be server's installation path (/.../caos-http-web-server)
 for each virtual host, with its name (e.g. diht.ru)
 2) Inside virtual host's directory would be the data of that virtual host:
     - Everything in data/static will be treated as static content.
+    - Other files are ignored (now).
 3) Each virtual host is considered enabled if it appears in $DIR/conf.d/vhosts.conf.<br>
 The format of vhosts.conf is as follows:<br>
 <ipv4_addr><br>
