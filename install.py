@@ -18,7 +18,11 @@ class InstallationConfig:
 		self.vhosts_file = self.conf_dir + '/vhosts.conf'
 		self.username_file = self.conf_dir + '/server_user.conf'
 		self.pid_file = self.install_dir + '/run.pid'
-		self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
+
+		if os.path.exists('/lib/systemd/system'):
+			self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
+		elif os.path.exists('/usr/lib/systemd/system'):
+			self.unit_file = '/usr/lib/systemd/system/caos-http-web-server.service'
 
 		self.main_executable_name = 'caos-http-web-server'
 		self.launcher_name = 'caos-http-web-server-launcher'
@@ -46,7 +50,7 @@ class Installer:
 		self.saferun(['rm', '-rf', self.config.install_dir], raise_except=False)
 		self.saferun(['rm', '-rf', 'build'], raise_except=False)
 		self.saferun(['rm', self.config.unit_file], raise_except=False)
-		self.saferun(['deluser', self.config.user_login], raise_except=False)
+		self.saferun(['userdel', self.config.user_login], raise_except=False)
 
 	def Install(self):
 		report = self.CheckInstallation()

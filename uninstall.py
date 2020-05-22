@@ -9,7 +9,12 @@ class Deinstallator:
 			raise Exception('You have to run script from repository root!')
 
 		self.install_dir = install_dir
-		self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
+
+		if os.path.exists('/lib/systemd/system'):
+			self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
+		elif os.path.exists('/usr/lib/systemd/system'):
+			self.unit_file = '/usr/lib/systemd/system/caos-http-web-server.service'
+
 		self.server_user = 'caos-http-web-server-user'
 
 	def deinstall(self):
@@ -18,7 +23,7 @@ class Deinstallator:
 		self.saferun(['rm', '-rf', self.install_dir], raise_except=False)
 		self.saferun(['rm', '-rf', 'build'], raise_except=False)
 		self.saferun(['rm', self.unit_file], raise_except=False)
-		self.saferun(['deluser', self.server_user], raise_except=False)
+		self.saferun(['userdel', self.server_user], raise_except=False)
 
 	# ===================================================================================================
 	# Utiility functions
