@@ -10,10 +10,12 @@ class Deinstallator:
 
 		self.install_dir = install_dir
 
-		if os.path.exists('/lib/systemd/system'):
-			self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
-		elif os.path.exists('/usr/lib/systemd/system'):
-			self.unit_file = '/usr/lib/systemd/system/caos-http-web-server.service'
+		self.unit_file = '/etc/systemd/system/caos-http-web-server.service'
+
+		# if os.path.exists('/lib/systemd/system'):
+		# 	self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
+		# elif os.path.exists('/usr/lib/systemd/system'):
+		# 	self.unit_file = '/usr/lib/systemd/system/caos-http-web-server.service'
 
 		self.server_user = 'caos-http-web-server-user'
 

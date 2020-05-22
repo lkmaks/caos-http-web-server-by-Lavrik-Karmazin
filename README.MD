@@ -6,6 +6,15 @@ Right now only hosting static text/html pages is implemented. Server can be cont
 after installation.
 
 <h3>Installation, running and deinstallation</h3>
+
+Requirements:
+cmake: >= 3.10.2
+make: >= 4.1
+python3 >= 3.7.3
+(/usr/bin/python3 has to exists, or scripts should be run with custom interpreter)
+g++ >= 7.4.0
+
+
 1) Clone the repository directory. 
 2) Run "sudo install.py" from repository directory. Insert the absolute or relative installation path, to a directory,
 where you want to install the server (and where its configuration and data will be). Server folder will be created

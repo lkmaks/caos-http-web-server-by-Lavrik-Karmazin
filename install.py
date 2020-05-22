@@ -19,10 +19,12 @@ class InstallationConfig:
 		self.username_file = self.conf_dir + '/server_user.conf'
 		self.pid_file = self.install_dir + '/run.pid'
 
-		if os.path.exists('/lib/systemd/system'):
-			self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
-		elif os.path.exists('/usr/lib/systemd/system'):
-			self.unit_file = '/usr/lib/systemd/system/caos-http-web-server.service'
+		self.unit_file = '/etc/systemd/system/caos-http-web-server.service'
+
+		# if os.path.exists('/lib/systemd/system'):
+		# 	self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
+		# elif os.path.exists('/usr/lib/systemd/system'):
+		# 	self.unit_file = '/usr/lib/systemd/system/caos-http-web-server.service'
 
 		self.main_executable_name = 'caos-http-web-server'
 		self.launcher_name = 'caos-http-web-server-launcher'
