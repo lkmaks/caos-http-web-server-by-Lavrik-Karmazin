@@ -10,30 +10,36 @@ class InstallationConfig:
 		if not self.workdir.endswith('caos-http-web-server-by-Lavrik-Karmazin'):
 			raise Exception('You have to run script from repository root!')
 
-		if os.path.exists('/usr/sbin/useradd'):
-			self.useradd_cmd = '/usr/sbin/useradd'
-		elif os.path.exists('/usr/bin/useradd'):
-			self.useradd_cmd = '/usr/bin/useradd'
+		# if os.path.exists('/usr/sbin/useradd'):
+		# 	self.useradd_cmd = '/usr/sbin/useradd'
+		# elif os.path.exists('/usr/bin/useradd'):
+		# 	self.useradd_cmd = '/usr/bin/useradd'
+		#
+		# if os.path.exists('/usr/bin/cmake'):
+		# 	self.cmake_cmd = '/usr/bin/cmake'
+		# elif os.path.exists('/usr/sbin/cmake'):
+		# 	self.cmake_cmd = '/usr/sbin/cmake'
+		#
+		# if os.path.exists('/usr/bin/make'):
+		# 	self.make_cmd = '/usr/bin/make'
+		# elif os.path.exists('/usr/sbin/make'):
+		# 	self.make_cmd = '/usr/sbin/make'
+		#
+		# if os.path.exists('/usr/bin/g++'):
+		# 	self.gpp_cmd = '/usr/bin/g++'
+		# elif os.path.exists('/usr/sbin/g++'):
+		# 	self.gpp_cmd = '/usr/sbin/g++'
+		#
+		# if os.path.exists('/usr/sbin/userdel'):
+		# 	self.userdel_cmd = '/usr/sbin/userdel'
+		# elif os.path.exists('/usr/bin/userdel'):
+		# 	self.userdel_cmd = '/usr/bin/userdel'
 
-		if os.path.exists('/usr/bin/cmake'):
-			self.cmake_cmd = '/usr/bin/cmake'
-		elif os.path.exists('/usr/sbin/cmake'):
-			self.cmake_cmd = '/usr/sbin/cmake'
-
-		if os.path.exists('/usr/bin/make'):
-			self.make_cmd = '/usr/bin/make'
-		elif os.path.exists('/usr/sbin/make'):
-			self.make_cmd = '/usr/sbin/make'
-
-		if os.path.exists('/usr/bin/g++'):
-			self.gpp_cmd = '/usr/bin/g++'
-		elif os.path.exists('/usr/sbin/g++'):
-			self.gpp_cmd = '/usr/sbin/g++'
-
-		if os.path.exists('/usr/sbin/userdel'):
-			self.userdel_cmd = '/usr/sbin/userdel'
-		elif os.path.exists('/usr/bin/userdel'):
-			self.userdel_cmd = '/usr/bin/userdel'
+		self.useradd_cmd = 'useradd'
+		self.cmake_cmd = 'cmake'
+		self.make_cmd = 'make'
+		self.gpp_cmd = 'g++'
+		self.userdel_cmd = 'userdel'
 
 		install_dir = os.path.abspath(install_dir)
 		self.install_dir = install_dir + '/caos-http-web-server'
@@ -163,12 +169,14 @@ class Installer:
 
 
 	def BuildExecutable(self):
+		# compile server executable and put it into installation dir
+
+		# cmake
+		self.saferun([self.config.cmake_cmd, '-Bbuild', '-H.'])
+
 		# go into build dir
-		self.saferun(['mkdir', 'build'])
 		os.chdir('build')
 
-		# compile server executable and put it into installation dir
-		self.saferun([self.config.cmake_cmd, '../'])
 		self.saferun([self.config.make_cmd])
 		self.saferun(['mv',
 					  self.config.main_executable_name,

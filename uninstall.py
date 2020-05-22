@@ -8,10 +8,12 @@ class Deinstallator:
 		if not self.workdir.endswith('caos-http-web-server-by-Lavrik-Karmazin'):
 			raise Exception('You have to run script from repository root!')
 
-		if os.path.exists('/usr/sbin/userdel'):
-			self.userdel_cmd = '/usr/sbin/userdel'
-		elif os.path.exists('/usr/bin/userdel'):
-			self.userdel_cmd = '/usr/bin/userdel'
+		# if os.path.exists('/usr/sbin/userdel'):
+		# 	self.userdel_cmd = '/usr/sbin/userdel'
+		# elif os.path.exists('/usr/bin/userdel'):
+		# 	self.userdel_cmd = '/usr/bin/userdel'
+
+		self.userdel_cmd = 'userdel'
 
 		self.install_dir = install_dir
 
