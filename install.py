@@ -72,6 +72,9 @@ class Installer:
 			print('Installation unsuccessful. Rolling back changes...')
 			self.RollBack()
 			print('Done')
+			return False
+		else:
+			return True
 
 	def CheckInstallation(self):
 		""" Check if current state of the system is suitable for installing the server """
@@ -229,8 +232,9 @@ def main():
 	install_dir = input('Directory to install server to (server will create its directory inside that): ')
 	install_conf = InstallationConfig(install_dir)
 	installer = Installer(install_conf)
-	installer.Install()
-	print('Installation successfull')
+	res = installer.Install()
+	if res:
+		print('Installation successfull')
 
 if __name__ == '__main__':
 	main()

@@ -33,6 +33,14 @@ Insert the absolute or relative path to the installation directory (it will be d
 In case of unsuccessful installation, changes to the system will not be applied. You can fix the problem
 and try to install again then. 
 
+If you have a <b>partial installation</b> from previous versions (or if last installation was interrupted), 
+first run uninstall.py (insert directory which should have been server directory).<br>
+For example, if you tried to install server to /home/seriy/servers, you should enter 
+/home/seriy/servers/caos-http-web-server.<br>
+
+If the entered directory exists, it will be <b>removed</b>, so only run the script if you are sure that you do not have
+your directory with the same name there. If you do, supply a non-existent path to the script (e.g. /kekus)  .
+
 <h3> Configuration</h3>
 
 Let $DIR be server's installation path (/.../caos-http-web-server) 
