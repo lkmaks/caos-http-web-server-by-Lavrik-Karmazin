@@ -6,6 +6,10 @@ import crypt
 
 class InstallationConfig:
 	def __init__(self, install_dir):
+		self.workdir = os.getcwd()
+		if not self.workdir.endswith('caos-http-web-server-by-Lavrik-Karmazin'):
+			raise Exception('You have to run script from repository root!')
+
 		install_dir = os.path.abspath(install_dir)
 		self.install_dir = install_dir + '/caos-http-web-server'
 		self.conf_dir = self.install_dir + '/conf.d'
@@ -36,30 +40,48 @@ class Installer:
 	def __init__(self, config):
 		self.config = config
 
+	def RollBack(self):
+		os.chdir(self.config.workdir)
+		self.saferun(['systemctl', 'stop', 'caos-http-web-server'], raise_except=False)
+		self.saferun(['rm', '-rf', self.config.install_dir], raise_except=False)
+		self.saferun(['rm', '-rf', 'build'], raise_except=False)
+		self.saferun(['rm', self.config.unit_file], raise_except=False)
+		self.saferun(['deluser', self.config.user_login], raise_except=False)
 
 	def Install(self):
 		report = self.CheckInstallation()
 		if report != 'OK':
 			raise Exception('Cannot install to this system: {}'.format(report))
 		os.umask(0)
-		self.CreateUser()
-		self.CreateDirs()
-		self.CreateDefaultConfig()
-		self.CreateDefaultData()
-		self.BuildExecutable()
-		self.CreateUnitFile()
-		self.EnableUnitFile()
-
+		try:
+			self.CreateUser()
+			self.CreateDirs()
+			self.CreateDefaultConfig()
+			self.CreateDefaultData()
+			self.BuildExecutable()
+			self.CreateUnitFile()
+			self.EnableUnitFile()
+		except Exception as e:
+			print(e)
+			print('Installation unsuccessful. Rolling back changes...')
+			self.RollBack()
+			print('Done')
 
 	def CheckInstallation(self):
 		""" Check if current state of the system is suitable for installing the server """
-		return 'OK' # for now
+
+		if not os.path.exists(self.config.install_dir[:len(self.config.install_dir) - len('/caos-http-web-server')]):
+			return 'Specified directory does not exist'
+
+		if os.path.exists(self.config.install_dir):
+			return 'Directory caos-http-web-server already exists in the specified directory'
+
+		return 'OK'
 
 
 	def CreateUser(self):
 		self.saferun(['useradd',
-					'--home-dir', self.config.install_dir, # home directory
-					'--no-create-home',                    # don't create home dir yet
+					'--system',							   # system user
 					'--comment', self.config.user_comment, # comment (user's full name)
 					'--expiredate', '',                    # no expiration date
 					'--user-group',                        # create a group for the user with the same name
@@ -163,13 +185,14 @@ class Installer:
 	# ============================================================================================================
 	# UTILITY FUNTIONS:
 
-	def saferun(self, args):
-		res = sb.run(args, stdout=sb.PIPE, stdin=sb.PIPE)
+	def saferun(self, args, raise_except=True):
+		res = sb.run(args, stdout=sb.PIPE, stderr=sb.PIPE)
 		if res.returncode != 0:
-			raise Exception('Error: command {} returned code {} with output:\n'
-							'stdout:\n {}\n'
-							'stderr:\n {}\n'
-							'Exiting...'.format(' '.join(args), res.returncode, res.stdout, res.stderr))
+			if raise_except:
+				raise Exception('Error: command {} returned code {} with output:\n'
+								'stdout:\n {}\n'
+								'stderr:\n {}\n'
+								'Exiting...'.format(' '.join(args), res.returncode, res.stdout, res.stderr))
 		else:
 			return res
 
@@ -195,10 +218,13 @@ def error(mes):
 	exit(0)
 
 def main():
+	if os.geteuid() != 0:
+		raise Exception('No rights! Add sudo.')
 	install_dir = input('Directory to install server to (server will create its directory inside that): ')
 	install_conf = InstallationConfig(install_dir)
 	installer = Installer(install_conf)
 	installer.Install()
+	print('Installation successfull')
 
 if __name__ == '__main__':
 	main()

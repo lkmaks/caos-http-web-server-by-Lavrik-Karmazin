@@ -21,6 +21,9 @@ Example data and configuration will be created:
 4) In order to uninstall the server, run "sudo uninstall.py" from repository directory.
 Insert the absolute or relative path to the installation directory (it will be deleted, among with other server files).
 
+In case of unsuccessful installation, changes to the system will not be applied. You can fix the problem
+and try to install again then. 
+
 <h3> Configuration</h3>
 
 Let $DIR be server's installation path (/.../caos-http-web-server) 

@@ -4,13 +4,19 @@ import subprocess as sb
 
 class Deinstallator:
 	def __init__(self, install_dir):
+		self.workdir = os.getcwd()
+		if not self.workdir.endswith('caos-http-web-server-by-Lavrik-Karmazin'):
+			raise Exception('You have to run script from repository root!')
+
 		self.install_dir = install_dir
 		self.unit_file = '/lib/systemd/system/caos-http-web-server.service'
 		self.server_user = 'caos-http-web-server-user'
 
 	def deinstall(self):
+		os.chdir(self.workdir)
 		self.saferun(['systemctl', 'stop', 'caos-http-web-server'], raise_except=False)
 		self.saferun(['rm', '-rf', self.install_dir], raise_except=False)
+		self.saferun(['rm', '-rf', 'build'], raise_except=False)
 		self.saferun(['rm', self.unit_file], raise_except=False)
 		self.saferun(['deluser', self.server_user], raise_except=False)
 
@@ -29,7 +35,8 @@ class Deinstallator:
 			return res
 
 def main():
-	install_dir = input('Installation directory (path to server\'s folder, e.g. /home/seriy/caos-http-web-server): ')
+	install_dir = input('Installation directory of the last installation '
+						'(path to server\'s folder, e.g. /home/seriy/caos-http-web-server): ')
 	confirm = input('Are you sure that this is the absolute path to'
 					' the installation directory of caos-http-web-server?\n'
 		  			'{}\n'
