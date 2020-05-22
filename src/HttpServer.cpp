@@ -48,6 +48,18 @@ HttpServer::HttpServer(const std::string &conf_dir, const std::string &data_dir)
             EPOLLIN,
             server_socket_epoll_contexts_[i]);
   }
+
+  // bind on ports now
+
+  sockaddr_in address;
+  memset(&address, 0, sizeof(address));
+  address.sin_family = AF_INET;
+  inet_aton(ipv4_addr_.c_str(), &address.sin_addr);
+  for (int i = 0; i < server_sockets_.size(); ++i) {
+    address.sin_port = htons(server_sockets_[i].second);
+    bind(server_sockets_[i].first, (sockaddr*)(&address), sizeof(address));
+    listen(server_sockets_[i].first, config_.max_conn_queue);
+  }
 }
 
 
@@ -87,16 +99,6 @@ bool HttpServer::load_config(const std::string &conf_dir, const std::string &dat
 }
 
 void HttpServer::run() {
-  sockaddr_in address;
-  memset(&address, 0, sizeof(address));
-  address.sin_family = AF_INET;
-  inet_aton(ipv4_addr_.c_str(), &address.sin_addr);
-  for (int i = 0; i < server_sockets_.size(); ++i) {
-    address.sin_port = htons(server_sockets_[i].second);
-    bind(server_sockets_[i].first, (sockaddr*)(&address), sizeof(address));
-    listen(server_sockets_[i].first, config_.max_conn_queue);
-  }
-
   thread_pool_ = ThreadPool(config_.threads_num, this);
 
   while (true) {
