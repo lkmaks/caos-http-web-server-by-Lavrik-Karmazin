@@ -8,6 +8,11 @@ class Deinstallator:
 		if not self.workdir.endswith('caos-http-web-server-by-Lavrik-Karmazin'):
 			raise Exception('You have to run script from repository root!')
 
+		if os.path.exists('/usr/sbin/userdel'):
+			self.userdel_cmd = '/usr/sbin/userdel'
+		elif os.path.exists('/usr/bin/userdel'):
+			self.userdel_cmd = '/usr/bin/userdel'
+
 		self.install_dir = install_dir
 
 		self.unit_file = '/etc/systemd/system/caos-http-web-server.service'
@@ -25,7 +30,7 @@ class Deinstallator:
 		self.saferun(['rm', '-rf', self.install_dir], raise_except=False)
 		self.saferun(['rm', '-rf', 'build'], raise_except=False)
 		self.saferun(['rm', self.unit_file], raise_except=False)
-		self.saferun(['userdel', self.server_user], raise_except=False)
+		self.saferun([self.userdel_cmd, self.server_user], raise_except=False)
 
 	# ===================================================================================================
 	# Utiility functions

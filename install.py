@@ -10,6 +10,31 @@ class InstallationConfig:
 		if not self.workdir.endswith('caos-http-web-server-by-Lavrik-Karmazin'):
 			raise Exception('You have to run script from repository root!')
 
+		if os.path.exists('/usr/sbin/useradd'):
+			self.useradd_cmd = '/usr/sbin/useradd'
+		elif os.path.exists('/usr/bin/useradd'):
+			self.useradd_cmd = '/usr/bin/useradd'
+
+		if os.path.exists('/usr/bin/cmake'):
+			self.cmake_cmd = '/usr/bin/cmake'
+		elif os.path.exists('/usr/sbin/cmake'):
+			self.cmake_cmd = '/usr/sbin/cmake'
+
+		if os.path.exists('/usr/bin/make'):
+			self.make_cmd = '/usr/bin/make'
+		elif os.path.exists('/usr/sbin/make'):
+			self.make_cmd = '/usr/sbin/make'
+
+		if os.path.exists('/usr/bin/g++'):
+			self.gpp_cmd = '/usr/bin/g++'
+		elif os.path.exists('/usr/sbin/g++'):
+			self.gpp_cmd = '/usr/sbin/g++'
+
+		if os.path.exists('/usr/sbin/userdel'):
+			self.userdel_cmd = '/usr/sbin/userdel'
+		elif os.path.exists('/usr/bin/userdel'):
+			self.userdel_cmd = '/usr/bin/userdel'
+
 		install_dir = os.path.abspath(install_dir)
 		self.install_dir = install_dir + '/caos-http-web-server'
 		self.conf_dir = self.install_dir + '/conf.d'
@@ -52,7 +77,7 @@ class Installer:
 		self.saferun(['rm', '-rf', self.config.install_dir], raise_except=False)
 		self.saferun(['rm', '-rf', 'build'], raise_except=False)
 		self.saferun(['rm', self.config.unit_file], raise_except=False)
-		self.saferun(['userdel', self.config.user_login], raise_except=False)
+		self.saferun([self.config.userdel_cmd, self.config.user_login], raise_except=False)
 
 	def Install(self):
 		report = self.CheckInstallation()
@@ -89,7 +114,7 @@ class Installer:
 
 
 	def CreateUser(self):
-		self.saferun(['useradd',
+		self.saferun([self.config.useradd_cmd,
 					'--system',							   # system user
 					'--comment', self.config.user_comment, # comment (user's full name)
 					'--expiredate', '',                    # no expiration date
@@ -143,14 +168,14 @@ class Installer:
 		os.chdir('build')
 
 		# compile server executable and put it into installation dir
-		self.saferun(['cmake', '../'])
-		self.saferun(['make'])
+		self.saferun([self.config.cmake_cmd, '../'])
+		self.saferun([self.config.make_cmd])
 		self.saferun(['mv',
 					  self.config.main_executable_name,
 					  '{}/{}'.format(self.config.install_dir, self.config.main_executable_name)])
 
 		# compile launcher executable and put it there too
-		self.saferun(['g++',
+		self.saferun([self.config.gpp_cmd,
 					  '--std=c++11',
 					  '-o', self.config.launcher_name,
 					  '../launcher.cpp'])
